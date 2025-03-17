@@ -3,8 +3,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Nosotros from './Nosotros';
 import Login from './Login';
-import Register from './Register'; // Asegúrate de que este archivo ya existe
-import Inicio from './inicio';
+import Register from './Register';
+import Inicio from './inicio'; // Asegúrate de que coincida con el nombre del archivo
 
 const App = () => {
     return (
