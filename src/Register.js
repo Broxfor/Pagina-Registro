@@ -55,34 +55,34 @@ const Register = () => {
   };
 
   return (
-    <div className="form-container">
-    <div className="logo">
-      <img src={logo} alt="Logo" />
-    </div>
-    <h2>Registro de Usuarios</h2>
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Usuario:</label>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-        />
+    <div className={styles.formContainer}>
+      <div className={styles.logo}>
+        <img src={logo} alt="Logo" />
       </div>
-      <div>
-        <label>Contraseña:</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+      <h2>Registro de Usuarios</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Usuario:</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Contraseña:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
         </div>
         <button type="submit">Registrarse</button>
       </form>
       {message && <p>{message}</p>}
-      {error && <p className="error">{error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
     </div>
   );
 };

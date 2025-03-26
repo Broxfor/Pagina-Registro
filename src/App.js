@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Nosotros from './Nosotros';
 import Login from './Login';
 import Register from './Register';
-import Inicio from './inicio'; // Asegúrate de que coincida con el nombre del archivo
+import Inicio from './inicio';
+import './App.css'; // Asegúrate de importar el archivo CSS
 
 const App = () => {
     return (

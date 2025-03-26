@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 
+
 const Inicio = () => {
     const [canciones, setCanciones] = useState([]);
 
