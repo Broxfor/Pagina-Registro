@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
 import styled from 'styled-components';
-import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsSkipForwardFill, BsSkipBackwardFill, 
          BsHouseDoorFill, BsSearch, BsCollectionFill, BsPlusSquareFill, BsHeartFill, 
-         BsGearFill, BsThreeDots } from 'react-icons/bs';
+          BsThreeDots } from 'react-icons/bs';
 import { FaSpotify } from 'react-icons/fa';
 
 // Estilos usando styled-components con colores y diseño de Spotify
@@ -123,7 +122,7 @@ const PerfilMenu = styled.div`
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background-color: #1DB954;
+    background-color: rgb(129, 0, 146);
     color: #000;
     display: flex;
     align-items: center;
@@ -597,7 +596,7 @@ const ControlVolumen = styled.div`
       border-radius: 2px;
       
       &:hover {
-        background-color: #1DB954;
+        background-color: rgb(129, 0, 146);
       }
       
       &::after {
