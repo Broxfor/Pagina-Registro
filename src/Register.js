@@ -4,7 +4,7 @@ import { supabase } from "./supabaseClient";
 import logo from "./logo.png";
 import styled from "styled-components";
 import "./diseñobase.css";
-// Estilos con styled-components
+
 const PageContainer = styled.div`
   font-family: "Arial", sans-serif;
   background: #121212;
@@ -107,16 +107,18 @@ const Register = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("usuarios")
-      .insert([{ nombre_usuario: username, contraseña: password }]);
+    const { error: insertError } = await supabase
+    .from("usuarios")
+    .insert([{ nombre_usuario: username, contraseña: password }]);
+  
 
-    if (error) {
-      console.error("Error al registrar usuario:", error);
-      setError(`Error al registrar usuario: ${error.message}`);
+    if (insertError) {
+      console.error("Error al registrar usuario:", insertError);
+      setError(`Error al registrar usuario: ${insertError.message}`);
     } else {
-      console.log("Usuario registrado:", data);
-      setMessage("Registro exitoso");
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("username", username);
+      navigate("/nosotros");
     }
   };
 

@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from './supabaseClient';
 import styled from 'styled-components';
 import 'react-h5-audio-player/lib/styles.css';
 import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsSkipForwardFill, BsSkipBackwardFill, 
          BsHouseDoorFill, BsSearch, BsCollectionFill, BsPlusSquareFill, BsHeartFill, 
-          BsThreeDots } from 'react-icons/bs';
+         BsThreeDots, BsVolumeUpFill } from 'react-icons/bs';
 import { FaSpotify } from 'react-icons/fa';
 
 // Estilos usando styled-components con colores y diseño de Spotify
-const AppContainer = styled.div`
+const AppContainer = styled.div\`
   font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: #121212;
   color: #fff;
   min-height: 100vh;
   position: relative;
-`;
+\`;
 
-const BarraSuperior = styled.header`
+const BarraSuperior = styled.header\`
   position: fixed;
   top: 0;
   left: 0;
@@ -29,48 +29,46 @@ const BarraSuperior = styled.header`
   align-items: center;
   padding: 0 20px;
   z-index: 1000;
-`;
+\`;
 
-
-const NavControls = styled.div`
+const NavControls = styled.div\`
   display: flex;
   gap: 16px;
   align-items: center;
-  
+
   button {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.7);
     border: none;
     color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
     cursor: pointer;
-    
+    transition: background-color 0.2s ease;
+    user-select: none;
+
     &:hover {
-      background-color: rgba(0, 0, 0, 0.9);
+      background-color: rgba(129, 0, 146, 0.9);
     }
   }
-`;
+\`;
 
-const BuscadorContainer = styled.div`
+const BuscadorContainer = styled.div\`
   position: relative;
   flex-grow: 1;
   max-width: 360px;
   margin: 0 20px;
-`;
+\`;
 
-const IconoBuscador = styled.div`
+const IconoBuscador = styled.div\`
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: #b3b3b3;
-`;
+\`;
 
-const Buscador = styled.input`
+const Buscador = styled.input\`
   width: 100%;
   padding: 10px 10px 10px 35px;
   border-radius: 25px;
@@ -87,9 +85,9 @@ const Buscador = styled.input`
   &::placeholder {
     color: #b3b3b3;
   }
-`;
+\`;
 
-const PerfilMenu = styled.div`
+const PerfilMenu = styled.div\`
   display: flex;
   align-items: center;
   gap: 16px;
@@ -106,34 +104,14 @@ const PerfilMenu = styled.div`
     }
   }
   
-  .premium-button {
-    background-color: transparent;
-    border: 1px solid #fff;
-    border-radius: 20px;
-    padding: 8px 16px;
-    font-weight: bold;
-    color: #fff;
-    
-    &:hover {
-      transform: scale(1.05);
-    }
-  }
-  
   .perfil {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: rgb(129, 0, 146);
-    color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: bold;
+    color: #b3b3b3;
   }
-`;
+\`;
 
-const BarraLateral = styled.aside`
-  width: ${props => props.expandida ? '240px' : '72px'};
+const BarraLateral = styled.aside\`
+  width: \${props => props.expandida ? '240px' : '72px'};
   height: 100vh;
   background-color: #000;
   position: fixed;
@@ -144,13 +122,13 @@ const BarraLateral = styled.aside`
   flex-direction: column;
   transition: all 0.3s ease;
   z-index: 900;
-`;
+\`;
 
-const Logo = styled.div`
+const Logo = styled.div\`
   display: flex;
   align-items: center;
-  justify-content: ${props => props.expandida ? 'flex-start' : 'center'};
-  padding: ${props => props.expandida ? '0 24px' : '0'};
+  justify-content: \${props => props.expandida ? 'flex-start' : 'center'};
+  padding: \${props => props.expandida ? '0 24px' : '0'};
   margin-bottom: 18px;
   
   svg {
@@ -162,27 +140,27 @@ const Logo = styled.div`
     font-size: 24px;
     color: #fff;
     margin-left: 10px;
-    display: ${props => props.expandida ? 'block' : 'none'};
+    display: \${props => props.expandida ? 'block' : 'none'};
   }
-`;
+\`;
 
-const MenuList = styled.ul`
+const MenuList = styled.ul\`
   list-style-type: none;
   padding: 0;
   margin: 0;
-`;
+\`;
 
-const MenuItem = styled.li`
-  padding: ${props => props.expandida ? '12px 24px' : '12px 0'};
+const MenuItem = styled.li\`
+  padding: \${props => props.expandida ? '12px 24px' : '12px 0'};
   margin-bottom: 4px;
   font-size: 14px;
-  color: ${props => props.active ? '#fff' : '#b3b3b3'};
+  color: \${props => props.active ? '#fff' : '#b3b3b3'};
   cursor: pointer;
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: ${props => props.expandida ? 'flex-start' : 'center'};
-  background-color: ${props => props.active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
+  justify-content: \${props => props.expandida ? 'flex-start' : 'center'};
+  background-color: \${props => props.active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
   
   &:hover {
     color: #fff;
@@ -190,61 +168,24 @@ const MenuItem = styled.li`
   
   svg {
     font-size: 24px;
-    margin-right: ${props => props.expandida ? '16px' : '0'};
+    margin-right: \${props => props.expandida ? '16px' : '0'};
   }
   
   span {
-    display: ${props => props.expandida ? 'block' : 'none'};
-    font-weight: ${props => props.active ? 'bold' : 'normal'};
+    display: \${props => props.expandida ? 'block' : 'none'};
+    font-weight: \${props => props.active ? 'bold' : 'normal'};
   }
-`;
+\`;
 
-const Separador = styled.div`
+const Separador = styled.div\`
   height: 1px;
   background-color: #282828;
   margin: 8px 12px;
-  display: ${props => props.expandida ? 'block' : 'none'};
-`;
+  display: \${props => props.expandida ? 'block' : 'none'};
+\`;
 
-const BibliotecaHeader = styled.div`
-  padding: ${props => props.expandida ? '16px 24px' : '16px 0'};
-  display: flex;
-  align-items: center;
-  justify-content: ${props => props.expandida ? 'space-between' : 'center'};
-  
-  div {
-    display: flex;
-    align-items: center;
-    
-    svg {
-      font-size: 24px;
-      color: #b3b3b3;
-    }
-    
-    h3 {
-      margin: 0 0 0 12px;
-      font-size: 16px;
-      color: #b3b3b3;
-      display: ${props => props.expandida ? 'block' : 'none'};
-    }
-  }
-  
-  button {
-    background: none;
-    border: none;
-    color: #b3b3b3;
-    font-size: 24px;
-    cursor: pointer;
-    display: ${props => props.expandida ? 'block' : 'none'};
-    
-    &:hover {
-      color: #fff;
-    }
-  }
-`;
-
-const ZonaPrincipal = styled.section`
-  margin-left: ${props => props.expandida ? '240px' : '72px'};
+const ZonaPrincipal = styled.section\`
+  margin-left: \${props => props.expandida ? '240px' : '72px'};
   margin-top: 60px;
   padding: 24px;
   padding-bottom: 120px;
@@ -257,13 +198,13 @@ const ZonaPrincipal = styled.section`
     font-weight: bold;
     margin-bottom: 24px;
   }
-`;
+\`;
 
-const SeccionTop = styled.div`
+const SeccionTop = styled.div\`
   margin-bottom: 32px;
-`;
+\`;
 
-const Categorias = styled.div`
+const Categorias = styled.div\`
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
@@ -287,16 +228,16 @@ const Categorias = styled.div`
       color: #000;
     }
   }
-`;
+\`;
 
-const Albumes = styled.div`
+const Albumes = styled.div\`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 24px;
   margin-top: 20px;
-`;
+\`;
 
-const Album = styled.div`
+const Album = styled.div\`
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 16px;
@@ -373,9 +314,10 @@ const Album = styled.div`
     overflow: hidden;
     text-overflow: ellipsis;
   }
-`;
+\`;
 
-const ZonaReproduccion = styled.footer`
+// Zona de reproducción actualizada
+const ZonaReproduccion = styled.footer\`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -388,9 +330,9 @@ const ZonaReproduccion = styled.footer`
   padding: 0 16px;
   z-index: 1000;
   border-top: 1px solid #282828;
-`;
+\`;
 
-const InfoCancion = styled.div`
+const InfoCancion = styled.div\`
   display: flex;
   align-items: center;
   gap: 12px;
@@ -453,13 +395,14 @@ const InfoCancion = styled.div`
       }
       
       &.favorito {
-        color:rgb(129, 0, 146);
+        color: rgb(129, 0, 146);
       }
     }
   }
-`;
+\`;
 
-const ReproductorCentral = styled.div`
+// Nuevo ReproductorCentral basado en el diseño proporcionado
+const ReproductorCentral = styled.div\`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -518,44 +461,84 @@ const ReproductorCentral = styled.div`
       height: 4px;
       background-color: #5e5e5e;
       border-radius: 2px;
-      position: relative;
       cursor: pointer;
-      
-      &:hover {
-        .relleno::after {
+      position: relative;
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 4px;
+        background: transparent;
+        cursor: pointer;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+
+        &::-webkit-slider-runnable-track {
+          height: 4px;
+          background: transparent;
+        }
+        
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          height: 12px;
+          width: 12px;
+          border-radius: 50%;
+          background: rgb(129, 0, 146);
+          cursor: pointer;
+          opacity: 1;
+          transition: opacity 0.2s;
+          position: relative;
+          top: -4px; /* centers the thumb vertically */
+          z-index: 3;
+          border: none;
+        }
+        
+        &:hover::-webkit-slider-thumb {
+          opacity: 1;
+        }
+        
+        &::-moz-range-track {
+          height: 4px;
+          background: transparent;
+        }
+
+        &::-moz-range-thumb {
+          height: 12px;
+          width: 12px;
+          border-radius: 50%;
+          background: rgb(129, 0, 146);
+          cursor: pointer;
+          opacity: 1;
+          transition: opacity 0.2s;
+          border: none;
+          position: relative;
+          z-index: 3;
+          top: 0;
+        }
+        
+        &:hover::-moz-range-thumb {
           opacity: 1;
         }
       }
-      
-      .relleno {
+
+      &::before {
+        content: "";
         position: absolute;
-        height: 100%;
-        width: 30%;
-        background-color: #fff;
+        top: 0;
+        left: 0;
+        height: 4px;
         border-radius: 2px;
-        
-        &:hover {
-          background-color:rgb(129, 0, 146);
-        }
-        
-        &::after {
-          content: '';
-          position: absolute;
-          right: -6px;
-          top: -4px;
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background-color: #fff;
-          opacity: 0;
-          transition: opacity 0.2s ease;
-        }
+        background: rgb(129, 0, 146); /* cambiar a morado */
+        width: \${props => props.progressPercentage}%;
+        z-index: 1;
+        pointer-events: none;
       }
     }
   }
-`;
+\`;
 
-const ControlVolumen = styled.div`
+const ControlVolumen = styled.div\`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -577,74 +560,98 @@ const ControlVolumen = styled.div`
   
   .volumen {
     width: 100px;
-    height: 4px;
-    background-color: #5e5e5e;
-    border-radius: 2px;
     position: relative;
-    cursor: pointer;
     
-    &:hover {
-      .relleno::after {
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: #5e5e5e;
+      border-radius: 2px;
+      cursor: pointer;
+      
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      
+      &:hover::-webkit-slider-thumb {
+        opacity: 1;
+      }
+      
+      &::-moz-range-thumb {
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        background: #fff;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+        border: none;
+      }
+      
+      &:hover::-moz-range-thumb {
         opacity: 1;
       }
     }
-    
-    .relleno {
-      position: absolute;
-      height: 100%;
-      width: 70%;
-      background-color: #b3b3b3;
-      border-radius: 2px;
-      
-      &:hover {
-        background-color: rgb(129, 0, 146);
-      }
-      
-      &::after {
-        content: '';
-        position: absolute;
-        right: -6px;
-        top: -4px;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background-color: #fff;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-    }
   }
-`;
+\`;
 
 // Componente principal Reysound
-const Reysound = () => {
-  const [expandida, setExpandida] = useState(true);
+const Reysound = ({ onLogout }) => {
+  const [expandida] = useState(true);
   const [canciones, setCanciones] = useState([]);
   const [cancionActual, setCancionActual] = useState(null);
   const [reproduciendo, setReproduciendo] = useState(false);
   const [busqueda, setBusqueda] = useState('');
+  const [categorias, setCategorias] = useState([]); // Estado para géneros
   const [categoriaActiva, setCategoriaActiva] = useState('Todo');
+  const [esFavorita, setEsFavorita] = useState(false);
+  
+  // Referencias para el reproductor de audio
+  const audioRef = useRef(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volumen, setVolumen] = useState(80);
 
-  // Obtener canciones de Supabase
+  // Obtener canciones y géneros de Supabase
   useEffect(() => {
-    const obtenerCanciones = async () => {
+    const obtenerDatos = async () => {
       try {
-        const { data, error } = await supabase
+        // Obtener géneros
+        const { data: generos, error: errorGeneros } = await supabase
+          .from('generos')
+          .select('*');
+
+        if (errorGeneros) {
+          throw errorGeneros;
+        }
+
+        setCategorias(generos); // Guardar géneros en estado
+
+        // Obtener canciones
+        const { data: cancionesData, error: errorCanciones } = await supabase
           .from('vista_canciones')
           .select('*');
 
-        if (error) {
-          throw error;
+        if (errorCanciones) {
+          throw errorCanciones;
         }
 
-        setCanciones(data);
+        setCanciones(cancionesData);
       } catch (error) {
-        console.error('Error al obtener canciones:', error.message);
-        alert('Hubo un error al cargar las canciones. Revisa la consola para más detalles.');
+        console.error('Error al obtener datos:', error.message);
+        alert('Hubo un error al cargar los datos. Revisa la consola para más detalles.');
       }
     };
 
-    obtenerCanciones();
+    obtenerDatos();
   }, []);
 
   // Manejar la reproducción de canciones
@@ -653,26 +660,127 @@ const Reysound = () => {
       console.log('Reproduciendo canción:', cancion);
       setCancionActual(cancion);
       setReproduciendo(true);
+      setEsFavorita(false); // Reset favorite on new song
+      
+      // Al seleccionar una nueva canción, esperar a que el DOM se actualice
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.src = cancion.url_archivo;
+          audioRef.current.play().catch(err => {
+            console.error('Error al reproducir:', err);
+          });
+        }
+      }, 0);
     } else {
       alert('No se encontró un archivo de audio para esta canción.');
     }
   };
 
-  // Filtrar canciones según la búsqueda
+  // Manejar la pausa/reproducción
+  const togglePlayPause = () => {
+    if (!cancionActual) return;
+    
+    if (reproduciendo) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(err => {
+        console.error('Error al reproducir:', err);
+      });
+    }
+    
+    setReproduciendo(!reproduciendo);
+  };
+
+  // Formatear tiempo en minutos:segundos
+  const formatTime = (seconds) => {
+    if (!seconds) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return \`\${mins}:\${secs < 10 ? '0' : ''}\${secs}\`;
+  };
+
+  // Cambiar la posición de la canción
+  const handleProgressChange = (e) => {
+    const value = parseFloat(e.target.value);
+    if (audioRef.current && duration) {
+      audioRef.current.currentTime = (value / 100) * duration;
+    }
+  };
+
+  // Cambiar el volumen
+  const handleVolumeChange = (e) => {
+    const value = parseFloat(e.target.value);
+    setVolumen(value);
+    if (audioRef.current) {
+      audioRef.current.volume = value / 100;
+    }
+  };
+
+  // Cambiar estado favorito
+  const toggleFavorito = () => {
+    setEsFavorita(!esFavorita);
+  };
+
+  // Manejar logout click
+  const handleLogout = () => {
+    // For now, just call the onLogout prop if provided, else log
+    if (onLogout) {
+      onLogout();
+    } else {
+      console.log('Cerrar Sesión clicked - espera instrucción futura para redireccionar');
+    }
+  };
+
+  // Eventos del audio
+  useEffect(() => {
+    const audio = audioRef.current;
+    
+    if (!audio) return;
+    
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+    
+    const handleDurationChange = () => {
+      setDuration(audio.duration);
+    };
+    
+    const handleEnded = () => {
+      setReproduciendo(false);
+      setCurrentTime(0);
+    };
+    
+    // Volumen inicial
+    audio.volume = volumen / 100;
+    
+    // Agregar event listeners
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('durationchange', handleDurationChange);
+    audio.addEventListener('ended', handleEnded);
+    
+    // Cleanup
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('durationchange', handleDurationChange);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [volumen]);
+
+  // Filtrar canciones según la búsqueda y la categoría activa (género)
   const cancionesFiltradas = canciones.filter(cancion =>
-    cancion.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-    cancion.artista_nombre.toLowerCase().includes(busqueda.toLowerCase())
+    (categoriaActiva === 'Todo' || cancion.genero === categoriaActiva) &&
+    (cancion.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
+    cancion.artista_nombre.toLowerCase().includes(busqueda.toLowerCase()))
   );
 
-  // Categorías para filtrar música
-  const categorias = ['Todo', 'Pop', 'Hip Hop', 'Rock', 'Electrónica', 'Latina'];
+  // Calcular porcentaje de progreso
+  const progressPercentage = duration ? (currentTime / duration) * 100 : 0;
 
   return (
     <AppContainer>
       <BarraSuperior>
         <NavControls>
-          <button>&lt;</button>
-          <button>&gt;</button>
+          <button onClick={handleLogout}>Cerrar Sesión</button>
         </NavControls>
         
         <BuscadorContainer>
@@ -680,16 +788,15 @@ const Reysound = () => {
             <BsSearch />
           </IconoBuscador>
           <Buscador
-            placeholder="¿Qué quieres escuchar?"
+            placeholder="¿Qué  escuchar?"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </BuscadorContainer>
         
         <PerfilMenu>
-          <button className="premium-button">Premium</button>
           <button>Instalar app</button>
-          <div className="perfil">B</div>
+          <div className="perfil">Usuario</div>
         </PerfilMenu>
       </BarraSuperior>
 
@@ -708,29 +815,21 @@ const Reysound = () => {
             <BsSearch />
             <span>Buscar</span>
           </MenuItem>
-        </MenuList>
-        
-        <Separador expandida={expandida} />
-        
-        <BibliotecaHeader expandida={expandida}>
-          <div>
+          <MenuItem expandida={expandida}>
+            <BsThreeDots />
+            <span>Artistas</span>
+          </MenuItem>
+          <MenuItem expandida={expandida}>
+            <BsThreeDots />
+            <span>Generos</span>
+          </MenuItem>
+          <MenuItem expandida={expandida}>
             <BsCollectionFill />
-            <h3>Tu Biblioteca</h3>
-          </div>
-          <button>
-            <BsPlusSquareFill />
-          </button>
-        </BibliotecaHeader>
-        
-        <MenuList>
-          <MenuItem expandida={expandida}>
-            <span>Tus Me gusta</span>
+            <span>PlayList</span>
           </MenuItem>
           <MenuItem expandida={expandida}>
-            <span>Playlists recientes</span>
-          </MenuItem>
-          <MenuItem expandida={expandida}>
-            <span>Podcasts guardados</span>
+            <BsHeartFill />
+            <span>Tus Me Gusta</span>
           </MenuItem>
         </MenuList>
       </BarraLateral>
@@ -739,13 +838,19 @@ const Reysound = () => {
         <SeccionTop>
           <h1>Buen día</h1>
           <Categorias>
-            {categorias.map(categoria => (
+            <button
+              className={categoriaActiva === 'Todo' ? 'active' : ''}
+              onClick={() => setCategoriaActiva('Todo')}
+            >
+              Todo
+            </button>
+            {categorias.map(genero => (
               <button 
-                key={categoria}
-                className={categoriaActiva === categoria ? 'active' : ''}
-                onClick={() => setCategoriaActiva(categoria)}
+                key={genero.id}
+                className={categoriaActiva === genero.nombre ? 'active' : ''}
+                onClick={() => setCategoriaActiva(genero.nombre)}
               >
-                {categoria}
+                {genero.nombre}
               </button>
             ))}
           </Categorias>
@@ -775,28 +880,33 @@ const Reysound = () => {
         </Albumes>
       </ZonaPrincipal>
 
+      {/* Reproductor actualizado */}
       <ZonaReproduccion>
         {cancionActual ? (
           <>
             <InfoCancion>
-              <img src={cancionActual.url_imagen || 'placeholder.jpg'} alt={cancionActual.titulo} />
+              <img id="player-album-art" src={cancionActual.url_imagen || 'placeholder.jpg'} alt={cancionActual.titulo} />
               <div className="texto">
-                <h3>{cancionActual.titulo}</h3>
-                <p>{cancionActual.artista_nombre}</p>
+                <h3 id="player-song-title">{cancionActual.titulo}</h3>
+                <p id="player-song-artist">{cancionActual.artista_nombre}</p>
               </div>
               <div className="acciones">
-                <button className="favorito">
-                  <BsHeartFill />
+                <button 
+                  className={\`favorito\${esFavorita ? ' activo' : ''}\`} 
+                  onClick={toggleFavorito}
+                  aria-label={esFavorita ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                >
+                  <BsHeartFill style={{ color: esFavorita ? 'rgb(129, 0, 146)' : '#b3b3b3' }}/>
                 </button>
               </div>
             </InfoCancion>
             
-            <ReproductorCentral>
+            <ReproductorCentral progressPercentage={progressPercentage}>
               <div className="controles">
                 <button>
                   <BsSkipBackwardFill size={20} />
                 </button>
-                <button className="play-pause">
+                <button className="play-pause" id="play-pause-btn" onClick={togglePlayPause}>
                   {reproduciendo ? 
                     <BsFillPauseCircleFill size={20} /> : 
                     <BsFillPlayCircleFill size={20} />
@@ -808,20 +918,36 @@ const Reysound = () => {
               </div>
               
               <div className="barra-progreso">
-                <span>0:00</span>
+                <span id="current-time">{formatTime(currentTime)}</span>
                 <div className="progreso">
-                  <div className="relleno"></div>
+                  <input
+                    id="progress-bar"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={progressPercentage}
+                    onChange={handleProgressChange}
+                    aria-label="Barra de progreso"
+                  />
                 </div>
-                <span>3:45</span>
+                <span id="duration">{formatTime(duration)}</span>
               </div>
             </ReproductorCentral>
             
             <ControlVolumen>
-              <button>
-                <BsThreeDots />
+              <button aria-label="Volumen" title="Volumen">
+                <BsVolumeUpFill />
               </button>
               <div className="volumen">
-                <div className="relleno"></div>
+                <input
+                  id="volume-slider"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={volumen}
+                  onChange={handleVolumeChange}
+                  aria-label="Control de volumen"
+                />
               </div>
             </ControlVolumen>
           </>
@@ -830,6 +956,9 @@ const Reysound = () => {
             Selecciona una canción para reproducir
           </div>
         )}
+        
+        {/* Reproductor de audio oculto */}
+        <audio ref={audioRef} id="audio-player" preload="metadata" />
       </ZonaReproduccion>
     </AppContainer>
   );

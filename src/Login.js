@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "./supabaseClient";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import logo from "./logo.png";
 
-// Estilos con styled-components
 const PageContainer = styled.div`
   font-family: "Arial", sans-serif;
   background: #121212;
@@ -28,7 +27,6 @@ const FormContainer = styled.div`
 const Logo = styled.div`
   img {
     width: 100px;
-    height: auto;
     margin-bottom: 20px;
   }
 `;
@@ -46,10 +44,10 @@ const Label = styled.label`
 const Input = styled.input`
   padding: 10px;
   margin-bottom: 20px;
-  border: 1px solid #333;
   border-radius: 5px;
   background: #2c2c2c;
   color: white;
+  border: 1px solid #333;
 
   &:focus {
     outline: none;
@@ -78,10 +76,15 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      navigate("/");
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    console.log("Iniciando sesión con:", username, password);
 
     try {
       const { data: users, error } = await supabase
@@ -89,34 +92,16 @@ const Login = () => {
         .select("nombre_usuario, contraseña")
         .eq("nombre_usuario", username);
 
-      console.log("Respuesta de Supabase:", users);
+      if (error) throw error;
 
-      if (error) {
-        console.error("Error al obtener datos de Supabase:", error);
-        throw error;
-      }
-
-      console.log("Usuarios encontrados:", users);
-
-      if (users && users.length > 0) {
-        const user = users[0];
-
-        console.log("Contraseña en BD:", user?.contraseña);
-        console.log("Contraseña ingresada:", password);
-
-        if (user?.contraseña === password) {
-          console.log("Usuario autenticado:", user);
-          navigate("/inicio");
-        } else {
-          console.log("Contraseña incorrecta.");
-          setError("Credenciales inválidas. Intenta nuevamente.");
-        }
+      if (users && users.length > 0 && users[0]?.contraseña === password) {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("username", username);
+        navigate("/");
       } else {
-        console.log("No se encontró el usuario.");
         setError("Credenciales inválidas. Intenta nuevamente.");
       }
     } catch (error) {
-      console.error("Error al iniciar sesión:", error.message);
       setError("Error al conectar con el servidor.");
     }
   };
@@ -131,21 +116,9 @@ const Login = () => {
         {error && <p style={{ color: "red" }}>{error}</p>}
         <Form onSubmit={handleLogin}>
           <Label>Usuario</Label>
-          <Input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Usuario"
-            required
-          />
+          <Input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
           <Label>Contraseña</Label>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"
-            required
-          />
+          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           <Button type="submit">Iniciar Sesión</Button>
         </Form>
         <Button onClick={() => navigate("/")}>Volver</Button>
