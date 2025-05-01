@@ -31,6 +31,7 @@ const BarraSuperior = styled.header`
   z-index: 1000;
 `;
 
+
 const NavControls = styled.div`
   display: flex;
   gap: 16px;
