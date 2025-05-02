@@ -719,7 +719,11 @@ const Reysound = ({ onLogout }) => {
       const { data: cancionesData, error: errorCanciones } = await supabase
         .from("vista_canciones")
         .select("*")
+<<<<<<< HEAD
         .eq("id", generoId);
+=======
+        .eq("genero_id", generoId);
+>>>>>>> 465a288fda1d1ce541534381d9a112b2e1ce4002
 
       if (errorCanciones) throw errorCanciones;
 
