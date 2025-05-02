@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import logo from "./logo.png";
 
-// Estilosnnn
+// Estilos
 const PageContainer = styled.div`
   font-family: 'Arial', sans-serif;
   background: #121212;
