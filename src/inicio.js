@@ -6,17 +6,18 @@ import { BsFillPlayCircleFill, BsFillPauseCircleFill, BsSkipForwardFill, BsSkipB
          BsHouseDoorFill, BsSearch, BsCollectionFill, BsPlusSquareFill, BsHeartFill, 
          BsThreeDots, BsVolumeUpFill } from 'react-icons/bs';
 import { FaSpotify } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 // Estilos usando styled-components con colores y diseño de Spotify
-const AppContainer = styled.div\`
+const AppContainer = styled.div`
   font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: #121212;
   color: #fff;
   min-height: 100vh;
   position: relative;
-\`;
+`;
 
-const BarraSuperior = styled.header\`
+const BarraSuperior = styled.header`
   position: fixed;
   top: 0;
   left: 0;
@@ -29,9 +30,9 @@ const BarraSuperior = styled.header\`
   align-items: center;
   padding: 0 20px;
   z-index: 1000;
-\`;
+`;
 
-const NavControls = styled.div\`
+const NavControls = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
@@ -51,24 +52,24 @@ const NavControls = styled.div\`
       background-color: rgba(129, 0, 146, 0.9);
     }
   }
-\`;
+`;
 
-const BuscadorContainer = styled.div\`
+const BuscadorContainer = styled.div`
   position: relative;
   flex-grow: 1;
   max-width: 360px;
   margin: 0 20px;
-\`;
+`;
 
-const IconoBuscador = styled.div\`
+const IconoBuscador = styled.div`
   position: absolute;
   left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: #b3b3b3;
-\`;
+`;
 
-const Buscador = styled.input\`
+const Buscador = styled.input`
   width: 100%;
   padding: 10px 10px 10px 35px;
   border-radius: 25px;
@@ -85,12 +86,13 @@ const Buscador = styled.input\`
   &::placeholder {
     color: #b3b3b3;
   }
-\`;
+`;
 
-const PerfilMenu = styled.div\`
+const PerfilMenu = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
   
   button {
     background: none;
@@ -107,11 +109,42 @@ const PerfilMenu = styled.div\`
   .perfil {
     font-weight: bold;
     color: #b3b3b3;
+    cursor: pointer;
+    user-select: none;
   }
-\`;
+`;
 
-const BarraLateral = styled.aside\`
-  width: \${props => props.expandida ? '240px' : '72px'};
+const Submenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 8px 0;
+  min-width: 140px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 1100;
+`;
+
+const SubmenuButton = styled.button`
+  width: 100%;
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(129, 0, 146, 0.9);
+    color: #fff;
+  }
+`;
+
+const BarraLateral = styled.aside`
+  width: ${props => props.expandida ? '240px' : '72px'};
   height: 100vh;
   background-color: #000;
   position: fixed;
@@ -122,13 +155,13 @@ const BarraLateral = styled.aside\`
   flex-direction: column;
   transition: all 0.3s ease;
   z-index: 900;
-\`;
+`;
 
-const Logo = styled.div\`
+const Logo = styled.div`
   display: flex;
   align-items: center;
-  justify-content: \${props => props.expandida ? 'flex-start' : 'center'};
-  padding: \${props => props.expandida ? '0 24px' : '0'};
+  justify-content: ${props => props.expandida ? 'flex-start' : 'center'};
+  padding: ${props => props.expandida ? '0 24px' : '0'};
   margin-bottom: 18px;
   
   svg {
@@ -140,27 +173,27 @@ const Logo = styled.div\`
     font-size: 24px;
     color: #fff;
     margin-left: 10px;
-    display: \${props => props.expandida ? 'block' : 'none'};
+    display: ${props => props.expandida ? 'block' : 'none'};
   }
-\`;
+`;
 
-const MenuList = styled.ul\`
+const MenuList = styled.ul`
   list-style-type: none;
   padding: 0;
   margin: 0;
-\`;
+`;
 
-const MenuItem = styled.li\`
-  padding: \${props => props.expandida ? '12px 24px' : '12px 0'};
+const MenuItem = styled.li`
+  padding: ${props => props.expandida ? '12px 24px' : '12px 0'};
   margin-bottom: 4px;
   font-size: 14px;
-  color: \${props => props.active ? '#fff' : '#b3b3b3'};
+  color: ${props => props.active ? '#fff' : '#b3b3b3'};
   cursor: pointer;
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: \${props => props.expandida ? 'flex-start' : 'center'};
-  background-color: \${props => props.active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
+  justify-content: ${props => props.expandida ? 'flex-start' : 'center'};
+  background-color: ${props => props.active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
   
   &:hover {
     color: #fff;
@@ -168,24 +201,24 @@ const MenuItem = styled.li\`
   
   svg {
     font-size: 24px;
-    margin-right: \${props => props.expandida ? '16px' : '0'};
+    margin-right: ${props => props.expandida ? '16px' : '0'};
   }
   
   span {
-    display: \${props => props.expandida ? 'block' : 'none'};
-    font-weight: \${props => props.active ? 'bold' : 'normal'};
+    display: ${props => props.expandida ? 'block' : 'none'};
+    font-weight: ${props => props.active ? 'bold' : 'normal'};
   }
-\`;
+`;
 
-const Separador = styled.div\`
+const Separador = styled.div`
   height: 1px;
   background-color: #282828;
   margin: 8px 12px;
-  display: \${props => props.expandida ? 'block' : 'none'};
-\`;
+  display: ${props => props.expandida ? 'block' : 'none'};
+`;
 
-const ZonaPrincipal = styled.section\`
-  margin-left: \${props => props.expandida ? '240px' : '72px'};
+const ZonaPrincipal = styled.section`
+  margin-left: ${props => props.expandida ? '240px' : '72px'};
   margin-top: 60px;
   padding: 24px;
   padding-bottom: 120px;
@@ -198,13 +231,13 @@ const ZonaPrincipal = styled.section\`
     font-weight: bold;
     margin-bottom: 24px;
   }
-\`;
+`;
 
-const SeccionTop = styled.div\`
+const SeccionTop = styled.div`
   margin-bottom: 32px;
-\`;
+`;
 
-const Categorias = styled.div\`
+const Categorias = styled.div`
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
@@ -228,16 +261,16 @@ const Categorias = styled.div\`
       color: #000;
     }
   }
-\`;
+`;
 
-const Albumes = styled.div\`
+const Albumes = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 24px;
   margin-top: 20px;
-\`;
+`;
 
-const Album = styled.div\`
+const Album = styled.div`
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 16px;
@@ -314,10 +347,10 @@ const Album = styled.div\`
     overflow: hidden;
     text-overflow: ellipsis;
   }
-\`;
+`;
 
 // Zona de reproducción actualizada
-const ZonaReproduccion = styled.footer\`
+const ZonaReproduccion = styled.footer`
   position: fixed;
   bottom: 0;
   left: 0;
@@ -330,9 +363,9 @@ const ZonaReproduccion = styled.footer\`
   padding: 0 16px;
   z-index: 1000;
   border-top: 1px solid #282828;
-\`;
+`;
 
-const InfoCancion = styled.div\`
+const InfoCancion = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
@@ -399,10 +432,10 @@ const InfoCancion = styled.div\`
       }
     }
   }
-\`;
+`;
 
 // Nuevo ReproductorCentral basado en el diseño proporcionado
-const ReproductorCentral = styled.div\`
+const ReproductorCentral = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -530,15 +563,15 @@ const ReproductorCentral = styled.div\`
         height: 4px;
         border-radius: 2px;
         background: rgb(129, 0, 146); /* cambiar a morado */
-        width: \${props => props.progressPercentage}%;
+        width: ${props => props.progressPercentage}%;
         z-index: 1;
         pointer-events: none;
       }
     }
   }
-\`;
+`;
 
-const ControlVolumen = styled.div\`
+const ControlVolumen = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -601,10 +634,11 @@ const ControlVolumen = styled.div\`
       }
     }
   }
-\`;
+`;
 
 // Componente principal Reysound
 const Reysound = ({ onLogout }) => {
+  const navigate = useNavigate();
   const [expandida] = useState(true);
   const [canciones, setCanciones] = useState([]);
   const [cancionActual, setCancionActual] = useState(null);
@@ -613,6 +647,9 @@ const Reysound = ({ onLogout }) => {
   const [categorias, setCategorias] = useState([]); // Estado para géneros
   const [categoriaActiva, setCategoriaActiva] = useState('Todo');
   const [esFavorita, setEsFavorita] = useState(false);
+
+  const [username, setUsername] = useState('');
+  const [submenuVisible, setSubmenuVisible] = useState(false);
   
   // Referencias para el reproductor de audio
   const audioRef = useRef(null);
@@ -652,6 +689,12 @@ const Reysound = ({ onLogout }) => {
     };
 
     obtenerDatos();
+
+    // Obtener username de localStorage
+    const user = localStorage.getItem('username');
+    if (user) {
+      setUsername(user);
+    }
   }, []);
 
   // Manejar la reproducción de canciones
@@ -696,7 +739,7 @@ const Reysound = ({ onLogout }) => {
     if (!seconds) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return \`\${mins}:\${secs < 10 ? '0' : ''}\${secs}\`;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   // Cambiar la posición de la canción
@@ -722,13 +765,18 @@ const Reysound = ({ onLogout }) => {
   };
 
   // Manejar logout click
-  const handleLogout = () => {
-    // For now, just call the onLogout prop if provided, else log
-    if (onLogout) {
-      onLogout();
-    } else {
-      console.log('Cerrar Sesión clicked - espera instrucción futura para redireccionar');
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.clear();
+      navigate('/');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
     }
+  };
+
+  const toggleSubmenu = () => {
+    setSubmenuVisible(!submenuVisible);
   };
 
   // Eventos del audio
@@ -796,7 +844,12 @@ const Reysound = ({ onLogout }) => {
         
         <PerfilMenu>
           <button>Instalar app</button>
-          <div className="perfil">Usuario</div>
+          <div className="perfil" onClick={toggleSubmenu}>{username || 'Usuario'}</div>
+          {submenuVisible && (
+            <Submenu>
+              <SubmenuButton onClick={() => alert('Configuración clickeado')}>Configuración</SubmenuButton>
+            </Submenu>
+          )}
         </PerfilMenu>
       </BarraSuperior>
 
@@ -836,7 +889,7 @@ const Reysound = ({ onLogout }) => {
 
       <ZonaPrincipal expandida={expandida}>
         <SeccionTop>
-          <h1>Buen día</h1>
+          <h1>Generos</h1>
           <Categorias>
             <button
               className={categoriaActiva === 'Todo' ? 'active' : ''}
@@ -856,7 +909,7 @@ const Reysound = ({ onLogout }) => {
           </Categorias>
         </SeccionTop>
         
-        <h1>Álbumes</h1>
+        <h1>Canciones</h1>
         <Albumes>
           {cancionesFiltradas.length > 0 ? (
             cancionesFiltradas.map((cancion) => (
@@ -892,7 +945,7 @@ const Reysound = ({ onLogout }) => {
               </div>
               <div className="acciones">
                 <button 
-                  className={\`favorito\${esFavorita ? ' activo' : ''}\`} 
+                  className={`favorito${esFavorita ? ' activo' : ''}`} 
                   onClick={toggleFavorito}
                   aria-label={esFavorita ? 'Quitar de favoritos' : 'Añadir a favoritos'}
                 >

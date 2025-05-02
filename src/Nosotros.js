@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import logo from "./logo.png";
@@ -50,62 +50,6 @@ const Button = styled.button`
   }
 `;
 
-const ProfileContainer = styled.div`
-  position: relative;
-  margin-right: 20px;
-`;
-
-const ProfileButton = styled.button`
-  border: 2px solid #7c3aed;
-  padding: 2px;
-  border-radius: 50%;
-  background: transparent;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-`;
-
-const ProfileImage = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #6b2ed1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: bold;
-  color: white;
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  top: 45px;
-  right: 0;
-  width: 180px;
-  background: #1e1e1e;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  z-index: 10;
-  overflow: hidden;
-`;
-
-const DropdownItem = styled.button`
-  display: block;
-  width: 100%;
-  padding: 10px 15px;
-  background: none;
-  border: none;
-  text-align: left;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-
-  &:hover {
-    background: #6b2ed1;
-  }
-`;
-
 const Content = styled.div`
   max-width: 800px;
   text-align: center;
@@ -132,12 +76,18 @@ const Footer = styled.footer`
   padding: 20px;
 `;
 
+const UsernameDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: bold;
+`;
+
 const Nosotros = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("Usuario");
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef();
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -146,18 +96,6 @@ const Nosotros = () => {
     if (user) {
       setUsername(user);
     }
-
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-
-    window.addEventListener("mousedown", handleClickOutside);
-    return () => window.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -172,20 +110,11 @@ const Nosotros = () => {
         <Logo src={logo} alt="ReySound Logo" />
 
         {isLoggedIn ? (
-  <ProfileContainer ref={dropdownRef} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-    <span>{username}</span>
-    <ProfileButton onClick={() => setShowDropdown(!showDropdown)}>
-      <ProfileImage>{username.charAt(0).toUpperCase()}</ProfileImage>
-    </ProfileButton>
-    {showDropdown && (
-      <DropdownMenu>
-        <DropdownItem onClick={() => navigate("/inicio")}>Entrar a la plataforma</DropdownItem>
-        <DropdownItem onClick={handleLogout}>Cerrar sesión</DropdownItem>
-      </DropdownMenu>
-    )}
-  </ProfileContainer>
-) : (
-
+          <NavButtons>
+            <UsernameDisplay>{username}</UsernameDisplay>
+            <Button onClick={handleLogout}>Cerrar sesión</Button>
+          </NavButtons>
+        ) : (
           <NavButtons>
             <Button onClick={() => navigate("/login")}>Iniciar Sesión</Button>
             <Button onClick={() => navigate("/register")}>Registrarse</Button>
@@ -210,12 +139,14 @@ const Nosotros = () => {
         <Description>
           ¡Únete a nuestra comunidad y sé parte de esta revolución musical!
         </Description>
-        <Button
-          onClick={() => navigate("/inicio")}
-          style={{ padding: "15px 30px", fontSize: "1.2rem" }}
-        >
-          Entrar a la plataforma
-        </Button>
+        {isLoggedIn && (
+          <Button
+            onClick={() => navigate("/inicio")}
+            style={{ padding: "15px 30px", fontSize: "1.2rem" }}
+          >
+            Entrar a la plataforma
+          </Button>
+        )}
       </Content>
 
       <Footer>© 2024 ReySound. Todos los derechos reservados.</Footer>

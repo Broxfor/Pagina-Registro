@@ -70,10 +70,65 @@ const Button = styled.button`
   }
 `;
 
+import { FaWhatsapp } from "react-icons/fa";
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+`;
+
+const ModalContent = styled.div`
+  background: #1f1f1f;
+  padding: 20px 30px;
+  border-radius: 12px;
+  width: 320px;
+  color: white;
+  position: relative;
+  text-align: center;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #bbb;
+  cursor: pointer;
+
+  &:hover {
+    color: white;
+  }
+`;
+
+const ContactInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 18px;
+  margin: 20px 0;
+`;
+
+const InfoText = styled.p`
+  font-size: 14px;
+  color: #ccc;
+`;
+
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,6 +161,20 @@ const Login = () => {
     }
   };
 
+  const openModal = () => {
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
+
   return (
     <PageContainer>
       <FormContainer>
@@ -122,7 +191,23 @@ const Login = () => {
           <Button type="submit">Iniciar Sesión</Button>
         </Form>
         <Button onClick={() => navigate("/")}>Volver</Button>
+        <p style={{ marginTop: "15px", cursor: "pointer", color: "#7c3aed" }} onClick={openModal}>
+          ¿Olvidaste tu contraseña?
+        </p>
       </FormContainer>
+
+      {showModal && (
+        <ModalOverlay onClick={handleOverlayClick}>
+          <ModalContent>
+            <CloseButton onClick={closeModal} aria-label="Cerrar modal">&times;</CloseButton>
+            <ContactInfo>
+              <FaWhatsapp size={28} color="#25D366" />
+              <span>829-768-0058</span>
+            </ContactInfo>
+            <InfoText>Contacta con un administrador para recuperar tu contraseña vía WhatsApp</InfoText>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </PageContainer>
   );
 };
