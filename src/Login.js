@@ -133,7 +133,7 @@ const Login = () => {
 
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "true") {
-      navigate("/");
+      navigate("/inicio"); // Redirige al inicio si ya está logueado
     }
   }, [navigate]);
 
@@ -152,11 +152,12 @@ const Login = () => {
       if (users && users.length > 0 && users[0]?.contraseña === password) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("username", username);
-        navigate("/");
+        navigate("/inicio"); // Redirige al inicio tras login exitoso
       } else {
         setError("Credenciales inválidas. Intenta nuevamente.");
       }
     } catch (error) {
+      console.error("Error al conectar con el servidor:", error);
       setError("Error al conectar con el servidor.");
     }
   };

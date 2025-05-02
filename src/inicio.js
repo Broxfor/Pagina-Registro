@@ -661,41 +661,94 @@ const Reysound = ({ onLogout }) => {
   useEffect(() => {
     const obtenerDatos = async () => {
       try {
-        // Obtener géneros
         const { data: generos, error: errorGeneros } = await supabase
-          .from('generos')
-          .select('*');
+          .from("generos")
+          .select("*");
 
-        if (errorGeneros) {
-          throw errorGeneros;
-        }
+        if (errorGeneros) throw errorGeneros;
 
-        setCategorias(generos); // Guardar géneros en estado
+        setCategorias(generos || []); // Asegura que siempre sea un array
 
-        // Obtener canciones
         const { data: cancionesData, error: errorCanciones } = await supabase
-          .from('vista_canciones')
-          .select('*');
+          .from("vista_canciones")
+          .select("*");
 
-        if (errorCanciones) {
-          throw errorCanciones;
-        }
+        if (errorCanciones) throw errorCanciones;
 
-        setCanciones(cancionesData);
+        setCanciones(cancionesData || []); // Asegura que siempre sea un array
       } catch (error) {
-        console.error('Error al obtener datos:', error.message);
-        alert('Hubo un error al cargar los datos. Revisa la consola para más detalles.');
+        console.error("Error al obtener datos:", error.message);
+        alert("Hubo un error al cargar los datos. Revisa la consola para más detalles.");
       }
     };
 
     obtenerDatos();
 
-    // Obtener username de localStorage
-    const user = localStorage.getItem('username');
-    if (user) {
-      setUsername(user);
-    }
+    const user = localStorage.getItem("username");
+    if (user) setUsername(user);
   }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleDurationChange = () => setDuration(audio.duration || 0);
+    const handleEnded = () => {
+      setReproduciendo(false);
+      setCurrentTime(0);
+    };
+
+    audio.volume = volumen / 100;
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("durationchange", handleDurationChange);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("durationchange", handleDurationChange);
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [volumen]);
+
+  // Obtener canciones según el género seleccionado
+  const cargarCancionesPorGenero = async (generoId) => {
+    try {
+      const { data: cancionesData, error: errorCanciones } = await supabase
+        .from("vista_canciones")
+        .select("*")
+        .eq("genero_id", generoId);
+
+      if (errorCanciones) throw errorCanciones;
+
+      setCanciones(cancionesData || []); // Actualiza las canciones con el género seleccionado
+    } catch (error) {
+      console.error("Error al cargar canciones por género:", error.message);
+      alert("Hubo un error al cargar las canciones. Revisa la consola para más detalles.");
+    }
+  };
+
+  // Manejar el cambio de género
+  const handleGeneroClick = async (genero) => {
+    setCategoriaActiva(genero.nombre);
+    if (genero.nombre === "Todo") {
+      // Si se selecciona "Todo", carga todas las canciones
+      const { data: cancionesData, error: errorCanciones } = await supabase
+        .from("vista_canciones")
+        .select("*");
+
+      if (errorCanciones) {
+        console.error("Error al cargar todas las canciones:", errorCanciones);
+        return;
+      }
+      setCanciones(cancionesData || []);
+    } else {
+      // Carga canciones del género seleccionado
+      await cargarCancionesPorGenero(genero.id);
+    }
+  };
 
   // Manejar la reproducción de canciones
   const reproducirCancion = (cancion) => {
@@ -732,6 +785,18 @@ const Reysound = ({ onLogout }) => {
     }
     
     setReproduciendo(!reproduciendo);
+  };
+
+  // Manejar el mute del audio
+  const toggleMute = () => {
+    if (audioRef.current) {
+      const isMuted = audioRef.current.volume === 0;
+      if (isMuted) {
+        audioRef.current.volume = volumen / 100;
+      } else {
+        audioRef.current.volume = 0;
+      }
+    }
   };
 
   // Formatear tiempo en minutos:segundos
@@ -778,48 +843,6 @@ const Reysound = ({ onLogout }) => {
   const toggleSubmenu = () => {
     setSubmenuVisible(!submenuVisible);
   };
-
-  // Eventos del audio
-  useEffect(() => {
-    const audio = audioRef.current;
-    
-    if (!audio) return;
-    
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-    };
-    
-    const handleDurationChange = () => {
-      setDuration(audio.duration);
-    };
-    
-    const handleEnded = () => {
-      setReproduciendo(false);
-      setCurrentTime(0);
-    };
-    
-    // Volumen inicial
-    audio.volume = volumen / 100;
-    
-    // Agregar event listeners
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('durationchange', handleDurationChange);
-    audio.addEventListener('ended', handleEnded);
-    
-    // Cleanup
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('durationchange', handleDurationChange);
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [volumen]);
-
-  // Filtrar canciones según la búsqueda y la categoría activa (género)
-  const cancionesFiltradas = canciones.filter(cancion =>
-    (categoriaActiva === 'Todo' || cancion.genero === categoriaActiva) &&
-    (cancion.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-    cancion.artista_nombre.toLowerCase().includes(busqueda.toLowerCase()))
-  );
 
   // Calcular porcentaje de progreso
   const progressPercentage = duration ? (currentTime / duration) * 100 : 0;
@@ -892,16 +915,16 @@ const Reysound = ({ onLogout }) => {
           <h1>Generos</h1>
           <Categorias>
             <button
-              className={categoriaActiva === 'Todo' ? 'active' : ''}
-              onClick={() => setCategoriaActiva('Todo')}
+              className={categoriaActiva === "Todo" ? "active" : ""}
+              onClick={() => handleGeneroClick({ nombre: "Todo" })}
             >
               Todo
             </button>
-            {categorias.map(genero => (
-              <button 
+            {categorias.map((genero) => (
+              <button
                 key={genero.id}
-                className={categoriaActiva === genero.nombre ? 'active' : ''}
-                onClick={() => setCategoriaActiva(genero.nombre)}
+                className={categoriaActiva === genero.nombre ? "active" : ""}
+                onClick={() => handleGeneroClick(genero)}
               >
                 {genero.nombre}
               </button>
@@ -911,8 +934,8 @@ const Reysound = ({ onLogout }) => {
         
         <h1>Canciones</h1>
         <Albumes>
-          {cancionesFiltradas.length > 0 ? (
-            cancionesFiltradas.map((cancion) => (
+          {canciones.length > 0 ? (
+            canciones.map((cancion) => (
               <Album key={cancion.id}>
                 <div className="portada">
                   <img src={cancion.url_imagen || 'placeholder.jpg'} alt={cancion.titulo} />
@@ -988,7 +1011,7 @@ const Reysound = ({ onLogout }) => {
             </ReproductorCentral>
             
             <ControlVolumen>
-              <button aria-label="Volumen" title="Volumen">
+              <button aria-label="Volumen" title="Volumen" onClick={toggleMute}>
                 <BsVolumeUpFill />
               </button>
               <div className="volumen">
