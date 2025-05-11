@@ -647,6 +647,7 @@ const Reysound = ({ onLogout }) => {
   const [categorias, setCategorias] = useState([]); // Estado para géneros
   const [categoriaActiva, setCategoriaActiva] = useState('Todo');
   const [esFavorita, setEsFavorita] = useState(false);
+  const [favoritas, setFavoritas] = useState([]);
 
   const [username, setUsername] = useState('');
   const [submenuVisible, setSubmenuVisible] = useState(false);
@@ -661,21 +662,37 @@ const Reysound = ({ onLogout }) => {
   useEffect(() => {
     const obtenerDatos = async () => {
       try {
+        // Obtener géneros
         const { data: generos, error: errorGeneros } = await supabase
           .from("generos")
-          .select("*");
+          .select("id, nombre, descripcion");
 
         if (errorGeneros) throw errorGeneros;
 
         setCategorias(generos || []); // Asegura que siempre sea un array
 
+        // Obtener canciones con join a artistas para obtener el nombre
         const { data: cancionesData, error: errorCanciones } = await supabase
-          .from("vista_canciones")
-          .select("*");
+          .from("musicas")
+          .select(`
+            id, 
+            titulo, 
+            url_archivo, 
+            url_imagen, 
+            artista_id,
+            genero_id,
+            artistas(nombre)
+          `);
 
         if (errorCanciones) throw errorCanciones;
 
-        setCanciones(cancionesData || []); // Asegura que siempre sea un array
+        // Transformar los datos para mantener la estructura esperada por el componente
+        const cancionesFormateadas = cancionesData?.map(cancion => ({
+          ...cancion,
+          artista_nombre: cancion.artistas?.nombre || 'Artista desconocido'
+        })) || [];
+
+        setCanciones(cancionesFormateadas);
       } catch (error) {
         console.error("Error al obtener datos:", error.message);
         alert("Hubo un error al cargar los datos. Revisa la consola para más detalles.");
@@ -689,67 +706,88 @@ const Reysound = ({ onLogout }) => {
   }, []);
 
   useEffect(() => {
-    const audio = audioRef.current;
+    const cargarFavoritas = async () => {
+      try {
+        const user = supabase.auth.user();
+        if (!user) return;
 
-    if (!audio) return;
+        const { data, error } = await supabase
+          .from('favoritos')
+          .select('cancion_id')
+          .eq('usuario_id', user.id);
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleDurationChange = () => setDuration(audio.duration || 0);
-    const handleEnded = () => {
-      setReproduciendo(false);
-      setCurrentTime(0);
+        if (error) throw error;
+
+        setFavoritas(data.map(fav => fav.cancion_id));
+      } catch (error) {
+        console.error('Error al cargar favoritos:', error.message);
+      }
     };
 
-    audio.volume = volumen / 100;
+    cargarFavoritas();
+  }, []);
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("durationchange", handleDurationChange);
-    audio.addEventListener("ended", handleEnded);
-
-    return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("durationchange", handleDurationChange);
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [volumen]);
-
-  // Obtener canciones según el género seleccionado
   const cargarCancionesPorGenero = async (generoId) => {
     try {
+      // Filtramos canciones por el genero_id e incluimos el join para obtener el nombre del artista
       const { data: cancionesData, error: errorCanciones } = await supabase
-        .from("vista_canciones")
-        .select("*")
-<<<<<<< HEAD
-        .eq("id", generoId);
-=======
-        .eq("genero_id", generoId);
->>>>>>> 465a288fda1d1ce541534381d9a112b2e1ce4002
+        .from("musicas")
+        .select(`
+          id, 
+          titulo, 
+          url_archivo, 
+          url_imagen, 
+          artista_id, 
+          genero_id,
+          artistas(nombre)
+        `)
+        .eq("genero_id", generoId); // Filtra por genero_id
 
       if (errorCanciones) throw errorCanciones;
 
-      setCanciones(cancionesData || []); // Actualiza las canciones con el género seleccionado
+      // Transformar los datos para mantener la estructura esperada por el componente
+      const cancionesFormateadas = cancionesData?.map(cancion => ({
+        ...cancion,
+        artista_nombre: cancion.artistas?.nombre || 'Artista desconocido'
+      })) || [];
+
+      setCanciones(cancionesFormateadas);
     } catch (error) {
       console.error("Error al cargar canciones por género:", error.message);
       alert("Hubo un error al cargar las canciones. Revisa la consola para más detalles.");
     }
   };
 
-  // Manejar el cambio de género
   const handleGeneroClick = async (genero) => {
     setCategoriaActiva(genero.nombre);
     if (genero.nombre === "Todo") {
-      // Si se selecciona "Todo", carga todas las canciones
+      // Cargar todas las canciones si se selecciona "Todo"
       const { data: cancionesData, error: errorCanciones } = await supabase
-        .from("vista_canciones")
-        .select("*");
+        .from("musicas")
+        .select(`
+          id, 
+          titulo, 
+          url_archivo, 
+          url_imagen, 
+          artista_id, 
+          genero_id,
+          artistas(nombre)
+        `);
 
       if (errorCanciones) {
         console.error("Error al cargar todas las canciones:", errorCanciones);
         return;
       }
-      setCanciones(cancionesData || []);
+      
+      // Transformar los datos para mantener la estructura esperada por el componente
+      const cancionesFormateadas = cancionesData?.map(cancion => ({
+        ...cancion,
+        artista_nombre: cancion.artistas?.nombre || 'Artista desconocido'
+      })) || [];
+
+      setCanciones(cancionesFormateadas);
     } else {
-      // Carga canciones del género seleccionado
+      // Cargar canciones para el género seleccionado
       await cargarCancionesPorGenero(genero.id);
     }
   };
@@ -829,8 +867,34 @@ const Reysound = ({ onLogout }) => {
   };
 
   // Cambiar estado favorito
-  const toggleFavorito = () => {
-    setEsFavorita(!esFavorita);
+  const toggleFavorito = async (cancionId) => {
+    try {
+      const usuarioId = supabase.auth.user().id;
+
+      if (favoritas.includes(cancionId)) {
+        // Quitar de favoritos
+        const { error } = await supabase
+          .from('favoritos')
+          .delete()
+          .eq('usuario_id', usuarioId)
+          .eq('cancion_id', cancionId);
+
+        if (error) throw error;
+
+        setFavoritas(favoritas.filter(id => id !== cancionId));
+      } else {
+        // Agregar a favoritos
+        const { error } = await supabase
+          .from('favoritos')
+          .insert([{ usuario_id: usuarioId, cancion_id: cancionId }]);
+
+        if (error) throw error;
+
+        setFavoritas([...favoritas, cancionId]);
+      }
+    } catch (error) {
+      console.error('Error al actualizar favoritos:', error.message);
+    }
   };
 
   // Manejar logout click
@@ -863,7 +927,7 @@ const Reysound = ({ onLogout }) => {
             <BsSearch />
           </IconoBuscador>
           <Buscador
-            placeholder="¿Qué  escuchar?"
+            placeholder="Buscar artistas, canciones o álbumes"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
@@ -892,16 +956,8 @@ const Reysound = ({ onLogout }) => {
             <span>Inicio</span>
           </MenuItem>
           <MenuItem expandida={expandida}>
-            <BsSearch />
-            <span>Buscar</span>
-          </MenuItem>
-          <MenuItem expandida={expandida}>
             <BsThreeDots />
             <span>Artistas</span>
-          </MenuItem>
-          <MenuItem expandida={expandida}>
-            <BsThreeDots />
-            <span>Generos</span>
           </MenuItem>
           <MenuItem expandida={expandida}>
             <BsCollectionFill />
@@ -938,26 +994,38 @@ const Reysound = ({ onLogout }) => {
         
         <h1>Canciones</h1>
         <Albumes>
-          {canciones.length > 0 ? (
-            canciones.map((cancion) => (
-              <Album key={cancion.id}>
-                <div className="portada">
-                  <img src={cancion.url_imagen || 'placeholder.jpg'} alt={cancion.titulo} />
-                  <button 
-                    className="play-button"
-                    onClick={() => reproducirCancion(cancion)}
-                  >
-                    <BsFillPlayCircleFill />
-                  </button>
-                </div>
-                <h3>{cancion.titulo}</h3>
-                <p>{cancion.artista_nombre}</p>
-              </Album>
-            ))
-          ) : (
-            <p>No se encontraron canciones</p>
-          )}
-        </Albumes>
+  {categoriaActiva === "Favoritas"
+    ? canciones.filter(cancion => favoritas.includes(cancion.id)).map(cancion => (
+        <Album key={cancion.id}>
+          <div className="portada">
+            <img src={cancion.url_imagen || 'placeholder.jpg'} alt={cancion.titulo} />
+            <button 
+              className="play-button"
+              onClick={() => reproducirCancion(cancion)}
+            >
+              <BsFillPlayCircleFill />
+            </button>
+          </div>
+          <h3>{cancion.titulo}</h3>
+          <p>{cancion.artista_nombre}</p>
+        </Album>
+      ))
+    : canciones.map(cancion => (
+        <Album key={cancion.id}>
+          <div className="portada">
+            <img src={cancion.url_imagen || 'placeholder.jpg'} alt={cancion.titulo} />
+            <button 
+              className="play-button"
+              onClick={() => reproducirCancion(cancion)}
+            >
+              <BsFillPlayCircleFill />
+            </button>
+          </div>
+          <h3>{cancion.titulo}</h3>
+          <p>{cancion.artista_nombre}</p>
+        </Album>
+      ))}
+</Albumes>
       </ZonaPrincipal>
 
       {/* Reproductor actualizado */}
@@ -972,11 +1040,11 @@ const Reysound = ({ onLogout }) => {
               </div>
               <div className="acciones">
                 <button 
-                  className={`favorito${esFavorita ? ' activo' : ''}`} 
-                  onClick={toggleFavorito}
-                  aria-label={esFavorita ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                  className={`favorito${favoritas.includes(cancionActual.id) ? ' activo' : ''}`} 
+                  onClick={() => toggleFavorito(cancionActual.id)}
+                  aria-label={favoritas.includes(cancionActual.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'}
                 >
-                  <BsHeartFill style={{ color: esFavorita ? 'rgb(129, 0, 146)' : '#b3b3b3' }}/>
+                  <BsHeartFill style={{ color: favoritas.includes(cancionActual.id) ? 'rgb(129, 0, 146)' : '#b3b3b3' }}/>
                 </button>
               </div>
             </InfoCancion>
